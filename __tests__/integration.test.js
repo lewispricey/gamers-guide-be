@@ -13,6 +13,14 @@ describe("/api/categories", () => {
       const { status, body } = await request(app).get("/api/categories");
       expect(status).toBe(200);
       expect(body.categories.length).toBe(4);
+      body.categories.forEach((category) => {
+        expect(category).toEqual(
+          expect.objectContaining({
+            slug: expect.any(String),
+            description: expect.any(String),
+          })
+        );
+      });
     });
   });
 });
