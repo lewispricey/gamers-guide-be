@@ -24,3 +24,23 @@ exports.fetchReviewById = (reviewId) => {
       return rows[0];
     });
 };
+
+exports.updateReviewVote = (reviewId, votes) => {
+  return db
+    .query(
+      `
+    UPDATE reviews 
+    SET votes=votes+$1 
+    WHERE review_id=$2 
+    RETURNING *;
+    `,
+      [votes, reviewId]
+    )
+    .then(({ rows }) => {
+      if (!rows[0]) {
+        return Promise.reject({ code: 404, msg: "not found" });
+      } else {
+        return rows[0];
+      }
+    });
+};

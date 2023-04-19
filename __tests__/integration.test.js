@@ -27,6 +27,32 @@ describe("/api/categories", () => {
   });
 });
 
+describe("/api/reviews", () => {
+  describe("GET", () => {
+    test("200 - returns an array of review objects sorted date desc", async () => {
+      const { status, body } = await request(app).get("/api/reviews");
+
+      expect(status).toBe(200);
+      expect(body.reviews.length).toBe(13);
+      body.reviews.forEach((review) => {
+        expect(review).toEqual(
+          expect.objectContaining({
+            title: expect.any(String),
+            review_id: expect.any(Number),
+            category: expect.any(String),
+            review_img_url: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            designer: expect.any(String),
+            comment_count: expect.any(Number),
+          })
+        );
+      });
+      expect(body.reviews).toBeSortedBy("created_at", { descending: true });
+    });
+  });
+});
+
 describe("/api/reviews/:reviewID", () => {
   describe("GET", () => {
     test("200 - returns the requested review", async () => {
@@ -62,30 +88,56 @@ describe("/api/reviews/:reviewID", () => {
       expect(body.error).toBe("invalid review id");
     });
   });
-});
 
-describe("/api/reviews", () => {
-  describe("GET", () => {
-    test("200 - returns an array of review objects sorted date desc", async () => {
-      const { status, body } = await request(app).get("/api/reviews");
+  describe("PATCH", () => {
+    test("200 - returns the updated review with the votes increased", async () => {
+      const patchBody = { inc_votes: 1 };
+      const { status, body } = await request(app)
+        .patch("/api/reviews/1")
+        .send(patchBody);
 
       expect(status).toBe(200);
-      expect(body.reviews.length).toBe(13);
-      body.reviews.forEach((review) => {
-        expect(review).toEqual(
-          expect.objectContaining({
-            title: expect.any(String),
-            review_id: expect.any(Number),
-            category: expect.any(String),
-            review_img_url: expect.any(String),
-            created_at: expect.any(String),
-            votes: expect.any(Number),
-            designer: expect.any(String),
-            comment_count: expect.any(Number),
-          })
-        );
-      });
-      expect(body.reviews).toBeSortedBy("created_at", { descending: true });
+      expect(body.review.votes).toBe(2);
+    });
+
+    test("200 - returns the updated review with the votes decreased", async () => {
+      const patchBody = { inc_votes: -1 };
+      const { status, body } = await request(app)
+        .patch("/api/reviews/1")
+        .send(patchBody);
+
+      expect(status).toBe(200);
+      expect(body.review.votes).toBe(1);
+    });
+
+    test("400 - returns an error when missing a inc_votes body", async () => {
+      const patchBody = { vote: 1 };
+      const { status, body } = await request(app)
+        .patch("/api/reviews/1")
+        .send(patchBody);
+
+      expect(status).toBe(400);
+      expect(body.error).toBe("missing required field(s)");
+    });
+
+    test("400 - returns an error when passed an invalid id", async () => {
+      const patchBody = { inc_votes: 1 };
+      const { status, body } = await request(app)
+        .patch("/api/reviews/banana")
+        .send(patchBody);
+
+      expect(status).toBe(400);
+      expect(body.error).toBe("invalid review id");
+    });
+
+    test("404 - returns an error when passed an none-existent id", async () => {
+      const patchBody = { inc_votes: 1 };
+      const { status, body } = await request(app)
+        .patch("/api/reviews/1000")
+        .send(patchBody);
+
+      expect(status).toBe(404);
+      expect(body.error).toBe("not found");
     });
   });
 });
