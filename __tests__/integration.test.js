@@ -50,6 +50,75 @@ describe("/api/reviews", () => {
       });
       expect(body.reviews).toBeSortedBy("created_at", { descending: true });
     });
+    test("200 - returns an array of review objects sorted by the passed sort query", async () => {
+      const { status, body } = await request(app).get(
+        "/api/reviews?sort_by=votes"
+      );
+
+      expect(status).toBe(200);
+      expect(body.reviews.length).toBe(13);
+      body.reviews.forEach((review) => {
+        expect(review).toEqual(
+          expect.objectContaining({
+            title: expect.any(String),
+            review_id: expect.any(Number),
+            category: expect.any(String),
+            review_img_url: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            designer: expect.any(String),
+            comment_count: expect.any(Number),
+          })
+        );
+      });
+      expect(body.reviews).toBeSortedBy("votes", { descending: true });
+    });
+
+    test("200 - returns an array of review objects ordered by the passed order", async () => {
+      const { status, body } = await request(app).get("/api/reviews?order=asc");
+
+      expect(status).toBe(200);
+      expect(body.reviews.length).toBe(13);
+      body.reviews.forEach((review) => {
+        expect(review).toEqual(
+          expect.objectContaining({
+            title: expect.any(String),
+            review_id: expect.any(Number),
+            category: expect.any(String),
+            review_img_url: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            designer: expect.any(String),
+            comment_count: expect.any(Number),
+          })
+        );
+      });
+      expect(body.reviews).toBeSortedBy("created_at", { descending: false });
+    });
+
+    test("200 - returns an array of review objects with the passed category", async () => {
+      const { status, body } = await request(app).get(
+        "/api/reviews?category=social%20deduction"
+      );
+
+      expect(status).toBe(200);
+      expect(body.reviews.length).toBe(11);
+      body.reviews.forEach((review) => {
+        expect(review).toEqual(
+          expect.objectContaining({
+            title: expect.any(String),
+            review_id: expect.any(Number),
+            category: "social deduction",
+            review_img_url: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            designer: expect.any(String),
+            comment_count: expect.any(Number),
+          })
+        );
+      });
+      expect(body.reviews).toBeSortedBy("created_at", { descending: true });
+    });
   });
 });
 

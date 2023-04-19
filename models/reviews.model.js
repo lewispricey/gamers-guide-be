@@ -1,17 +1,38 @@
 const db = require("../db/connection");
+const { checkSortBy, checkOrder } = require("../utils/validate-querys");
 
-exports.fetchReviews = () => {
+const checkCategory = (category) => {
   return db
-    .query(
-      `SELECT reviews.review_id, title, category, reviews.designer, reviews.created_at, reviews.votes, reviews.review_img_url, COUNT(comment_id)::int AS comment_count
-      FROM reviews 
-      LEFT OUTER JOIN comments ON reviews.review_id = comments.review_id
-      GROUP BY reviews.review_id
-      ORDER BY reviews.created_at DESC;`
-    )
+    .query("SELECT * FROM categories WHERE slug=$1", [category])
     .then(({ rows }) => {
-      return rows;
+      if (!rows[0]) {
+        return "";
+      } else {
+        return `WHERE category=\'${category}\'`;
+      }
     });
+};
+
+exports.fetchReviews = async (sort, order = "DESC", category) => {
+  const sortBy = checkSortBy(sort);
+  const orderBy = checkOrder(order);
+
+  let categoryFilter = "";
+
+  if (category) {
+    categoryFilter = await checkCategory(category);
+  }
+
+  let queryString = `SELECT reviews.review_id, title, category, reviews.designer, reviews.created_at, reviews.votes, reviews.review_img_url, COUNT(comment_id)::int AS comment_count
+  FROM reviews 
+  LEFT OUTER JOIN comments ON reviews.review_id = comments.review_id
+  ${categoryFilter}
+  GROUP BY reviews.review_id
+  ORDER BY ${sortBy} ${orderBy};`;
+
+  return db.query(queryString).then(({ rows }) => {
+    return rows;
+  });
 };
 
 exports.fetchReviewById = (reviewId) => {
