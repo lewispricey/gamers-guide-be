@@ -12,11 +12,13 @@ const {
 } = require("./controllers/comments.controller");
 const { psqlError } = require("./errors/psql.error");
 const { customError } = require("./errors/custom.error");
+const { getUsers } = require("./controllers/users.controller");
 
 const app = express();
 
 app.use(express.json());
 
+app.get("/api/users", getUsers);
 app.get("/api/categories", getCategories);
 app.get("/api/reviews/:reviewId/comments", getCommentsById);
 app.post("/api/reviews/:reviewId/comments", postComment);

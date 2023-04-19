@@ -277,3 +277,21 @@ describe("/api/comments/:commentId", () => {
     });
   });
 });
+
+describe("/api/users", () => {
+  test("200 - returns an array of user objects", async () => {
+    const { status, body } = await request(app).get("/api/users");
+
+    expect(status).toBe(200);
+    expect(body.users.length).toBe(4);
+    body.users.forEach((review) => {
+      expect(review).toEqual(
+        expect.objectContaining({
+          username: expect.any(String),
+          name: expect.any(String),
+          avatar_url: expect.any(String),
+        })
+      );
+    });
+  });
+});
