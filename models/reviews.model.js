@@ -37,7 +37,16 @@ exports.fetchReviews = async (sort, order = "DESC", category) => {
 
 exports.fetchReviewById = (reviewId) => {
   return db
-    .query(`SELECT * from reviews WHERE review_id = $1`, [reviewId])
+    .query(
+      `
+    SELECT reviews.review_id, reviews.title, reviews.review_body, reviews.designer, reviews.review_img_url, reviews.votes, reviews.category, reviews.owner, reviews.created_at, COUNT(comment_id)::int AS comment_count
+    from reviews 
+    LEFT OUTER JOIN comments ON reviews.review_id = comments.review_id
+    WHERE reviews.review_id = $1
+    GROUP BY reviews.review_id
+      `,
+      [reviewId]
+    )
     .then(({ rows }) => {
       if (!rows[0]) {
         return Promise.reject({ code: 404, msg: "not found" });
