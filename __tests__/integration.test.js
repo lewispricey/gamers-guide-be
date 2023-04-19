@@ -53,7 +53,7 @@ describe("/api/reviews", () => {
   });
 });
 
-describe("/api/reviews/:reviewID", () => {
+describe("/api/reviews/:reviewId", () => {
   describe("GET", () => {
     test("200 - returns the requested review", async () => {
       const { status, body } = await request(app).get("/api/reviews/1");
@@ -85,7 +85,7 @@ describe("/api/reviews/:reviewID", () => {
       const { status, body } = await request(app).get("/api/reviews/banana");
 
       expect(status).toBe(400);
-      expect(body.error).toBe("invalid review id");
+      expect(body.error).toBe("invalid id");
     });
   });
 
@@ -127,7 +127,7 @@ describe("/api/reviews/:reviewID", () => {
         .send(patchBody);
 
       expect(status).toBe(400);
-      expect(body.error).toBe("invalid review id");
+      expect(body.error).toBe("invalid id");
     });
 
     test("404 - returns an error when passed an none-existent id", async () => {
@@ -142,7 +142,7 @@ describe("/api/reviews/:reviewID", () => {
   });
 });
 
-describe("/api/reviews/:review_id/comments", () => {
+describe("/api/reviews/:reviewId/comments", () => {
   describe("GET", () => {
     test("200 - returns an array of comments sorted by date desc", async () => {
       const { status, body } = await request(app).get(
@@ -182,7 +182,7 @@ describe("/api/reviews/:review_id/comments", () => {
       );
 
       expect(status).toBe(400);
-      expect(body.error).toBe("invalid review id");
+      expect(body.error).toBe("invalid id");
     });
 
     test("404 - returns an error when passed a none-existent id", async () => {
@@ -251,6 +251,29 @@ describe("/api/reviews/:review_id/comments", () => {
 
       expect(status).toBe(404);
       expect(body.error).toEqual("not found");
+    });
+  });
+});
+
+describe("/api/comments/:commentId", () => {
+  describe("DELETE", () => {
+    test("204 - Success when passed a commentId that exists", async () => {
+      const { status } = await request(app).delete("/api/comments/2");
+      expect(status).toBe(204);
+    });
+
+    test("400 - returns an error when passed an invaid id", async () => {
+      const { status, body } = await request(app).delete(
+        "/api/comments/bannana"
+      );
+      expect(status).toBe(400);
+      expect(body.error).toBe("invalid id");
+    });
+
+    test("404 - returns an error when passed non-existent id", async () => {
+      const { status, body } = await request(app).delete("/api/comments/1000");
+      expect(status).toBe(404);
+      expect(body.error).toBe("not found");
     });
   });
 });

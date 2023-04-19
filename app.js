@@ -8,6 +8,7 @@ const {
 const {
   getCommentsById,
   postComment,
+  deleteComment,
 } = require("./controllers/comments.controller");
 const { psqlError } = require("./errors/psql.error");
 const { customError } = require("./errors/custom.error");
@@ -22,6 +23,7 @@ app.post("/api/reviews/:reviewId/comments", postComment);
 app.get("/api/reviews/:reviewId", getReviewById);
 app.patch("/api/reviews/:reviewId", patchReviewVote);
 app.get("/api/reviews", getReviews);
+app.delete("/api/comments/:commentId", deleteComment);
 
 app.use(customError);
 app.use(psqlError);
